@@ -51,15 +51,25 @@ export function KanbanBoard() {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/tasks");
+      const res = await fetch("/api/tasks", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
       if (res.ok) {
         const data = await res.json();
         // Handle both formats: { tasks: [...] } and [...]
         const taskList = Array.isArray(data) ? data : (data.tasks || []);
         setTasks(taskList);
+      } else if (res.status === 401) {
+        console.warn("Not authenticated, tasks will be empty");
+        setTasks([]);
+      } else {
+        console.error("Failed to load tasks: HTTP", res.status);
+        setTasks([]);
       }
     } catch (error) {
       console.error("Failed to load tasks:", error);
+      setTasks([]);
     }
     setLoading(false);
   }
@@ -87,6 +97,8 @@ export function KanbanBoard() {
       });
       if (res.ok) {
         await load();
+      } else {
+        console.error("Failed to add task: HTTP", res.status);
       }
     } catch (error) {
       console.error("Failed to add task:", error);
@@ -102,6 +114,8 @@ export function KanbanBoard() {
       });
       if (res.ok) {
         await load();
+      } else {
+        console.error("Failed to update task: HTTP", res.status);
       }
     } catch (error) {
       console.error("Failed to update task:", error);
