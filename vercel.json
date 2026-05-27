@@ -1,7 +1,10 @@
 {
-  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm run build",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install",
+  "nodeVersion": "20.x",
   "env": {
-    "PNPM_SKIP_FROZEN_LOCKFILE": "1"
-  }
+    "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+  },
+  "envPrefix": [""],
+  "regions": ["iad1"]
 }
