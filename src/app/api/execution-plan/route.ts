@@ -164,10 +164,11 @@ export async function POST(req: Request) {
     steps.push({ step: "roadmap", status: "done" });
 
     if (parsed.data.replaceExisting) {
+      const filter: any = { userId };
       await Promise.all([
-        Task.deleteMany({ userId } as any),
-        Project.deleteMany({ userId } as any),
-        Milestone.deleteMany({ userId } as any),
+        Task.deleteMany(filter),
+        Project.deleteMany(filter),
+        Milestone.deleteMany(filter),
       ]);
     }
 

@@ -61,7 +61,7 @@ export default function AgentsPage() {
     } catch (e) {
       setErrors((err) => ({
         ...err,
-        [agent]: e instanceof Error ? e.message : "Agent failed.",
+        [id]: e instanceof Error ? e.message : "Agent failed.",
       }));
     } finally {
       setLoadingAgent(null);

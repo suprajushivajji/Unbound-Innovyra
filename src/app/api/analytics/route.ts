@@ -35,10 +35,11 @@ export async function GET() {
   try {
     await dbConnect();
     const userId = new mongoose.Types.ObjectId(session.user.id);
+    const filter: any = { userId };
 
-    const tasks = await Task.find({ userId }).lean();
-    const milestones = await Milestone.find({ userId }).lean();
-    const latestRoadmap = await Roadmap.findOne({ userId })
+    const tasks = await Task.find(filter).lean();
+    const milestones = await Milestone.find(filter).lean();
+    const latestRoadmap = await Roadmap.findOne(filter)
       .sort({ createdAt: -1 })
       .lean();
 

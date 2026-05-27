@@ -23,9 +23,10 @@ export function calcStreak(completedDates: Date[]) {
 }
 
 export async function computeUserAnalytics(userId: mongoose.Types.ObjectId) {
-  const tasks = await Task.find({ userId } as any).lean();
-  const milestones = await Milestone.find({ userId } as any).lean();
-  const latestRoadmap = await Roadmap.findOne({ userId } as any)
+  const filter: any = { userId };
+  const tasks = await Task.find(filter).lean();
+  const milestones = await Milestone.find(filter).lean();
+  const latestRoadmap = await Roadmap.findOne(filter)
     .sort({ createdAt: -1 })
     .lean();
 

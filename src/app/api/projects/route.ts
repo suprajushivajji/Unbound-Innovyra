@@ -45,7 +45,8 @@ export async function GET() {
   try {
     await dbConnect();
     const userId = new mongoose.Types.ObjectId(session.user.id);
-    const projects = await Project.find({ userId }).sort({ createdAt: -1 }).lean();
+    const filter: any = { userId };
+    const projects = await Project.find(filter).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({
       projects: projects.map((p) => serializeProject(p as any)),

@@ -57,7 +57,8 @@ export async function GET(req: Request) {
   try {
     await dbConnect();
     const userId = new mongoose.Types.ObjectId(session.user.id);
-    const tasks = await Task.find({ userId })
+    const filter: any = { userId };
+    const tasks = await Task.find(filter)
       .sort({ orderIndex: 1, created_at: 1 })
       .lean();
 
@@ -101,7 +102,7 @@ export async function POST(req: Request) {
       priority: parsed.data.priority ?? "medium",
       category: parsed.data.category ?? "general",
       dueDate: due ? new Date(due) : null,
-    });
+    } as any);
 
     return NextResponse.json({ task: serializeTask(created) }, { status: 201 });
   } catch (error) {
@@ -150,8 +151,9 @@ export async function PUT(req: Request) {
     const due = parsed.data.dueDate ?? parsed.data.due_date;
     if (due !== undefined) updateData.dueDate = due ? new Date(due) : null;
 
+    const filter: any = { _id: taskId, userId };
     const updated = await Task.findOneAndUpdate(
-      { _id: taskId, userId },
+      filter,
       { $set: updateData },
       { new: true }
     ).lean();
