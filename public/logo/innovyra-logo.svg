@@ -1,0 +1,25 @@
+<svg width="720" height="180" viewBox="0 0 720 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="62" y1="22" x2="220" y2="160" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="0.45" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="glow" x="-30" y="-30" width="780" height="240" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.55 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#glow)">
+    <path d="M92 26L160 66V146L92 154L24 146V66L92 26Z" stroke="url(#g)" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M70 70C70 67.7909 71.7909 66 74 66H86C88.2091 66 90 67.7909 90 70V138C90 140.209 88.2091 142 86 142H74C71.7909 142 70 140.209 70 138V70Z" fill="rgba(255,255,255,0.08)" stroke="url(#g)" stroke-width="2"/>
+    <path d="M106 58C106 55.7909 107.791 54 110 54H122C124.209 54 126 55.7909 126 58V132C126 134.209 124.209 136 122 136H110C107.791 136 106 134.209 106 132V58Z" fill="rgba(255,255,255,0.06)" stroke="url(#g)" stroke-width="2"/>
+  </g>
+  <text x="205" y="112" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="64" font-weight="700" fill="#EAF0FF" letter-spacing="1.5">INNOVYRA</text>
+  <text x="208" y="146" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="20" fill="rgba(234,240,255,0.75)">Smart Career Execution Engine</text>
+</svg>
+
