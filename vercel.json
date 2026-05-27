@@ -1,0 +1,7 @@
+{
+  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm run build",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "env": {
+    "PNPM_SKIP_FROZEN_LOCKFILE": "1"
+  }
+}
