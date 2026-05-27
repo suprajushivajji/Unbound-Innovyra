@@ -12,6 +12,14 @@ const signInSchema = z.object({
 });
 
 export const authConfig: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  pages: {
+    signIn: "/auth/login",
+  },
   providers: [
     Credentials({
       credentials: {
@@ -61,9 +69,6 @@ export const authConfig: NextAuthOptions = {
       },
     }),
   ],
-  pages: {
-    signIn: "/auth/login",
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
