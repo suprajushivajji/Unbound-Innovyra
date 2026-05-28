@@ -107,6 +107,10 @@ export async function generateJson<T>({
       return validated.data;
     } catch (err) {
       lastError = err;
+      console.error(
+        `[OpenRouter attempt ${attempt + 1}/${retries + 1}] Error:`,
+        err instanceof Error ? err.message : err
+      );
       if (attempt < retries) {
         await sleep(500 * (attempt + 1));
         continue;

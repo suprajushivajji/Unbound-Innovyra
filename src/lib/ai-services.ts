@@ -16,6 +16,7 @@ async function callAiOrFallback<T>(
 ): Promise<T> {
   if (!process.env.OPENROUTER_API_KEY) {
     lastAiMode = "fallback";
+    console.log("[ai-services] No OPENROUTER_API_KEY set, using fallback");
     return fallback();
   }
 
@@ -211,32 +212,53 @@ export async function generateResearch(input: {
         temperature: 0.35,
         retries: 2,
       }),
-    () => ({
-      trendingSkills: focus.focus.slice(0, 6),
-      hiringDemand: `Strong demand for ${input.domain} talent pursuing ${input.careerGoal}. (Offline insights — OpenRouter unavailable or rate limited.)`,
-      salaryInsights: {
-        min:
-          input.skillLevel === "Advanced"
-            ? 95000
-            : input.skillLevel === "Intermediate"
-              ? 75000
-              : 60000,
-        max:
-          input.skillLevel === "Advanced"
-            ? 180000
-            : input.skillLevel === "Intermediate"
-              ? 140000
-              : 110000,
-        currency: "USD",
-        notes: `Estimated ${input.skillLevel} range for ${input.domain}; verify with current job boards.`,
-      },
-      marketTrends: [
-        "Hiring favors candidates who ship end-to-end portfolio projects",
-        "Demand is increasing for demonstrable project experience",
-        "Portfolios outperform certificates for technical roles",
-      ],
-      technologies: focus.focus,
-    })
+    () => {
+      // Enhanced fallback with contextual insights
+      const skillLevelSalary = {
+        "Beginner": { min: 65000, max: 95000 },
+        "Intermediate": { min: 85000, max: 140000 },
+        "Advanced": { min: 120000, max: 200000 },
+      };
+      
+      const salaryRange = skillLevelSalary[input.skillLevel] || { min: 80000, max: 140000 };
+      
+      const demandDescriptions = {
+        "Generative AI": "Explosive growth in LLM applications; companies racing to integrate AI. Strong demand for engineers who can ship RAG systems, fine-tuning pipelines, and agent orchestration. Portfolio with working LLM projects heavily valued.",
+        "Machine Learning": "Sustained high demand for ML engineers across tech, finance, healthcare. Data quality and model interpretability increasingly critical. Strong preference for candidates with deployed models and A/B testing experience.",
+        "Data Engineering": "Strong demand for data pipeline expertise; ETL/ELT skills remain in short supply. Companies heavily investing in data lakes and real-time processing. SQL + cloud infrastructure expertise very marketable.",
+        "Cloud AI": "Explosive opportunity; cloud providers (AWS, GCP, Azure) integrating AI services. DevOps + ML knowledge rare combo commanding premium salaries. Kubernetes and containerization expertise in high demand.",
+      };
+      
+      const hiringDemand = demandDescriptions[input.domain] || "Strong market demand for skilled practitioners. Portfolio projects and proven execution track record heavily valued over certifications.";
+      
+      const trendingSkillsByDomain = {
+        "Generative AI": ["Prompt Engineering", "RAG Systems", "LangChain", "Fine-tuning", "Vector DBs", "Multi-agent systems"],
+        "Machine Learning": ["PyTorch", "Feature Engineering", "Model Deployment", "MLOps", "Experiment Tracking", "A/B Testing"],
+        "Data Engineering": ["Apache Spark", "Airflow", "Kafka", "Data Modeling", "SQL Optimization", "Cloud (AWS/GCP/Azure)"],
+        "Cloud AI": ["Kubernetes", "Docker", "CI/CD", "Infrastructure-as-Code", "Monitoring", "API Design"],
+      };
+      
+      const skills = trendingSkillsByDomain[input.domain] || focus.focus;
+      
+      return {
+        trendingSkills: skills,
+        hiringDemand,
+        salaryInsights: {
+          min: salaryRange.min,
+          max: salaryRange.max,
+          currency: "USD",
+          notes: `${input.skillLevel} level market rate for ${input.domain}. Portfolio projects and proven shipping experience significantly boost salary negotiation.`,
+        },
+        marketTrends: [
+          `${input.domain} adoption accelerating across all industries`,
+          "Companies prioritize candidates with shipped projects over credentials",
+          "Interview process increasingly emphasizes system design and architecture",
+          "Remote work expanding opportunities globally; US/Bay Area rates remain highest",
+          "Specialization (domain + tool) more valuable than generalization",
+        ],
+        technologies: skills,
+      };
+    }
   );
 }
 
@@ -283,22 +305,74 @@ export async function generateRoadmap(input: {
         retries: 2,
       }),
     () => {
-      const weeks = Array.from({ length: totalWeeks }).map((_, i) => ({
-        week: i + 1,
-        title: `Week ${i + 1}: ${focus.focus[i % focus.focus.length]}`,
-        goal: `Progress toward ${input.careerGoal} (${input.domain})`,
-        outcomes: [
-          "Ship one measurable artifact",
-          "Document learnings + revisions",
-          "Practice interview/assessment",
-        ],
-        keyTechnologies: focus.focus.slice(0, 4),
-        timeAllocation: { learning: 40, building: 40, interview: 20 },
-      }));
+      // Generate week-specific content
+      const weekPhases = Math.ceil(totalWeeks / 4);
+      const weeks = Array.from({ length: totalWeeks }).map((_, i) => {
+        const phase = Math.floor(i / weekPhases); // Early/mid/late phase
+        const weekNum = i + 1;
+        
+        let title, goal, outcomes, timeAllocation;
+        
+        if (phase === 0) {
+          // Foundation phase (weeks 1-quarter)
+          title = `Week ${weekNum}: ${focus.focus[i % focus.focus.length]} Fundamentals`;
+          goal = `Master core ${focus.focus[0]} concepts and build intuition`;
+          outcomes = [
+            `Deep dive into ${focus.focus[i % focus.focus.length]}`,
+            "Build mental models through practice",
+            "Document 3-5 key insights",
+          ];
+          timeAllocation = { learning: 60, building: 30, interview: 10 };
+        } else if (phase === 1) {
+          // Build phase (mid)
+          title = `Week ${weekNum}: ${focus.focus[(i + 1) % focus.focus.length]} Projects`;
+          goal = `Build real portfolio artifacts with ${focus.focus[(i + 1) % focus.focus.length]}`;
+          outcomes = [
+            "Ship working MVP of a project",
+            "Deploy to production/GitHub",
+            "Write technical post-mortem",
+          ];
+          timeAllocation = { learning: 30, building: 55, interview: 15 };
+        } else if (phase === 2) {
+          // Interview prep phase (later weeks)
+          title = `Week ${weekNum}: Interview & Refinement`;
+          goal = `Solidify interview skills and refine portfolio`;
+          outcomes = [
+            "Complete 2-3 mock interviews",
+            "Polish resume + LinkedIn",
+            "Review and update projects",
+          ];
+          timeAllocation = { learning: 20, building: 35, interview: 45 };
+        } else {
+          // Mastery/polish phase
+          title = `Week ${weekNum}: ${focus.focus[i % focus.focus.length]} Mastery`;
+          goal = `Achieve deep expertise and job readiness`;
+          outcomes = [
+            "Advanced project refinement",
+            "System design practice",
+            "Final interview preparation",
+          ];
+          timeAllocation = { learning: 15, building: 30, interview: 55 };
+        }
+        
+        return {
+          week: weekNum,
+          title,
+          goal,
+          outcomes,
+          keyTechnologies: focus.focus.slice((i % 2) * 2, (i % 2) * 2 + 4),
+          timeAllocation,
+        };
+      });
+      
       return {
         weeks,
-        summary: `${input.timelineMonths}-month ${input.domain} roadmap for ${input.careerGoal} (${input.weeklyHours}h/week).`,
-        riskFactors: ["Time constraints", "Scope creep on projects"],
+        summary: `${input.timelineMonths}-month intensive ${input.domain} execution roadmap for ${input.careerGoal}. Structured as Foundation → Projects → Interview Prep → Mastery (${input.weeklyHours}h/week).`,
+        riskFactors: [
+          "Scope creep on projects (enforce MVP first)",
+          "Interview fatigue (space practice sessions)",
+          "Analysis paralysis on tech choices (commit early)"
+        ],
       };
     }
   );
@@ -350,35 +424,82 @@ export async function generateTasks(input: {
       }),
     () => {
       const base = focus.focus.slice(0, 6);
-      return {
-        tasks: [
-          ...base.map((s, idx) => ({
-            title: `Learn: ${s}`,
-            description: `Focused study + notes + mini-exercises for ${s}.`,
-            status: "to_learn" as const,
-            priority: idx < 2 ? ("high" as const) : ("medium" as const),
-            category: "learning",
-            dueDaysFromNow: (idx + 1) * 2,
-          })),
-          {
-            title: "Build: Portfolio project skeleton",
-            description:
-              "Scaffold repo, define milestones, ship first working slice.",
-            status: "in_progress" as const,
-            priority: "high" as const,
-            category: "project",
-            dueDaysFromNow: 7,
-          },
-          {
-            title: "Interview Prep: weekly mock",
-            description: "Run one mock interview and write a reflection note.",
-            status: "interview_prep" as const,
-            priority: "medium" as const,
-            category: "interview",
-            dueDaysFromNow: 7,
-          },
-        ],
-      };
+      const skills = base.length >= 6 ? base : [...base, ...focus.focus];
+      
+      // Create varied tasks across different categories
+      const tasks = [
+        // Learning tasks
+        ...skills.map((s, idx) => ({
+          title: `Learn: ${s}`,
+          description: `Deep study of ${s}: concepts, best practices, and real-world applications. Build intuition through examples.`,
+          status: "to_learn" as const,
+          priority: idx < 3 ? ("high" as const) : ("medium" as const),
+          category: "learning",
+          dueDaysFromNow: (idx + 1) * 3,
+        })),
+        // Project tasks
+        {
+          title: `Build: ${focus.projectFlavors[0] || "Portfolio"} Project - Phase 1`,
+          description: `Scaffold repo, define MVP scope, and ship first working feature. Focus on core functionality.`,
+          status: "in_progress" as const,
+          priority: "high" as const,
+          category: "project",
+          dueDaysFromNow: 7,
+        },
+        {
+          title: `Build: ${focus.projectFlavors[0] || "Portfolio"} Project - Phase 2`,
+          description: `Expand features, add error handling, and improve UX. Ship to production or GitHub.`,
+          status: "to_learn" as const,
+          priority: "high" as const,
+          category: "project",
+          dueDaysFromNow: 14,
+        },
+        // Interview prep
+        {
+          title: "Interview Prep: System Design Mock",
+          description: "Practice designing a system end-to-end. Record and review. Focus on trade-offs and scale.",
+          status: "interview_prep" as const,
+          priority: "high" as const,
+          category: "interview",
+          dueDaysFromNow: 10,
+        },
+        {
+          title: "Interview Prep: Behavioral Round",
+          description: "Prepare STAR method answers, practice storytelling, and refine project narratives.",
+          status: "to_learn" as const,
+          priority: "medium" as const,
+          category: "interview",
+          dueDaysFromNow: 12,
+        },
+        // Resume/profile
+        {
+          title: "Update: Resume with Recent Projects",
+          description: "Add latest projects, metrics, and achievements. Keep to one page; make it scannable.",
+          status: "to_learn" as const,
+          priority: "medium" as const,
+          category: "resume",
+          dueDaysFromNow: 5,
+        },
+        {
+          title: "Polish: GitHub Profile & README",
+          description: "Ensure profiles showcase best projects. Write clear, concise READMEs with live demos.",
+          status: "to_learn" as const,
+          priority: "medium" as const,
+          category: "resume",
+          dueDaysFromNow: 6,
+        },
+        // Revision/optimization
+        {
+          title: "Refactor: Code Quality & Best Practices",
+          description: "Revisit old code, improve readability, add tests, and optimize performance.",
+          status: "revision" as const,
+          priority: "medium" as const,
+          category: "revision",
+          dueDaysFromNow: 21,
+        },
+      ];
+      
+      return { tasks };
     }
   );
 }

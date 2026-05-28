@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       input: parsed.data,
       roadmap: roadmapData,
       roadmapId: doc._id.toString(),
-      mode: process.env.GEMINI_API_KEY ? "gemini" : "stub",
+      mode: process.env.OPENROUTER_API_KEY ? "openrouter" : "fallback",
     });
   } catch (error) {
     console.error("Roadmap error:", error);

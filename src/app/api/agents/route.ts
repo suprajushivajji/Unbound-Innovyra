@@ -29,8 +29,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
-    const apiKey = process.env.GEMINI_API_KEY;
+    const model = process.env.OPENROUTER_MODEL ?? "deepseek/deepseek-v4-flash:free";
+    const apiKey = process.env.OPENROUTER_API_KEY;
 
     // If no key, use stub
     if (!apiKey) {
@@ -73,24 +73,31 @@ Current Skills: ${(parsed.data.currentSkills || []).join(", ") || "Not specified
 
 Please provide actionable advice based on the context.`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const url = "https://openrouter.ai/api/v1/chat/completions";
 
     const res = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "authorization": `Bearer ${apiKey}`,
+        "http-referer": "http://localhost:3000",
+        "x-title": "Innovyra",
+      },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: `${system}\n\n${user}` }] }],
-        generationConfig: { temperature: 0.4 },
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        temperature: 0.4,
       }),
     });
 
     const json = await res.json().catch(() => null);
 
-    // Fallback to stub if quota exceeded
-    if (!res.ok && json?.error?.status === "RESOURCE_EXHAUSTED") {
-      console.warn("Gemini quota exceeded for agents, using stub response");
+    // Fallback to stub if rate limited or API error
+    if (!res.ok) {
+      console.warn("OpenRouter agents error, using stub response:", json?.error?.message);
       const responses: Record<string, any> = {
         interview_prep: {
           questions: [
@@ -158,21 +165,19 @@ Please provide actionable advice based on the context.`;
       return NextResponse.json({
         agentType: parsed.data.agentType,
         advice: responses[parsed.data.agentType] || responses.career_coach,
-        source: "stub_quota_exceeded",
+        source: "stub_api_error",
       });
     }
 
     if (!res.ok) {
-      console.error("Gemini agents error:", res.status, json);
+      console.error("OpenRouter agents error:", res.status, json);
       return NextResponse.json(
         { error: "Failed to get agent advice", details: json },
         { status: 500 }
       );
     }
 
-    const parts = (json?.candidates?.[0]?.content?.parts ??
-      []) as Array<{ text?: string }>;
-    const text = parts.map((p) => p.text ?? "").join("");
+    const text = json?.choices?.[0]?.message?.content ?? "";
 
     let adviceData;
     try {
@@ -186,7 +191,7 @@ Please provide actionable advice based on the context.`;
     return NextResponse.json({
       agentType: parsed.data.agentType,
       advice: adviceData,
-      source: "gemini",
+      source: "openrouter",
     });
   } catch (error) {
     console.error("Agents error:", error);

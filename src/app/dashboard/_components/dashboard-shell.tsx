@@ -4,25 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
-import {
-  BarChart3,
-  BrainCircuit,
-  KanbanSquare,
-  LogOut,
-  Route,
-  Search,
-} from "lucide-react";
-import { cn } from "@/lib/cn";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
+import StaggeredMenu from "@/components/staggered-menu/StaggeredMenu";
+import type { StaggeredMenuItem } from "@/components/staggered-menu/StaggeredMenu";
 
-const navItems = [
-  { href: "/dashboard", label: "Project HUB", icon: KanbanSquare },
-  { href: "/dashboard/roadmap", label: "Roadmap", icon: Route },
-  { href: "/dashboard/research", label: "Research", icon: Search },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/agents", label: "Agents", icon: BrainCircuit },
-] as const;
+const navItems: StaggeredMenuItem[] = [
+  { label: "Main", ariaLabel: "Go to Main", link: "/dashboard" },
+  { label: "Roadmap", ariaLabel: "View your roadmap", link: "/dashboard/roadmap" },
+  { label: "Research", ariaLabel: "Open DeepSearch Research", link: "/dashboard/research" },
+  { label: "Analytics", ariaLabel: "View analytics", link: "/dashboard/analytics" },
+  { label: "Agents", ariaLabel: "AI Agent Orchestrator", link: "/dashboard/agents" },
+];
 
 export function DashboardShell({
   children,
@@ -46,122 +40,116 @@ export function DashboardShell({
     }
   }
 
+  function handleNavClick(item: StaggeredMenuItem) {
+    router.push(item.link);
+  }
+
+  const logoElement = (
+    <Link href="/" className="sm-logo flex items-center gap-3">
+      <div className="relative">
+        <div
+          className="absolute -inset-2 rounded-2xl opacity-0 blur-md transition group-hover:opacity-100"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 20%, rgba(139,92,246,0.55), rgba(6,182,212,0.12) 70%, transparent)",
+          }}
+        />
+        <Image
+          src="/logo/innovyra-icon.svg"
+          alt="Innovyra"
+          width={34}
+          height={34}
+          className="relative"
+        />
+      </div>
+      <div className="flex flex-col leading-[1.2] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        <span className="text-[0.95rem] font-extrabold tracking-wide text-white">Innovyra</span>
+        <span className="text-[0.7rem] font-bold text-white/90">Execution OS</span>
+      </div>
+    </Link>
+  );
+
+  const footerContent = (
+    <div>
+      <div className="sm-user-email">Signed in</div>
+      <div className="sm-user-address">{userEmail}</div>
+      <button
+        onClick={handleSignOut}
+        disabled={signingOut}
+        className="sm-signout"
+        type="button"
+      >
+        <LogOut size={14} />
+        {signingOut ? "Signing out…" : "Sign out"}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="glass h-fit rounded-3xl p-4 lg:sticky lg:top-6">
-            <Link href="/" className="group flex items-center gap-3 px-2 py-2">
-              <div className="relative">
-                <div className="absolute -inset-2 rounded-2xl opacity-0 blur-md transition group-hover:opacity-100"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 30% 20%, rgba(139,92,246,0.55), rgba(6,182,212,0.12) 70%, transparent)",
-                  }}
-                />
-                <Image
-                  src="/logo/innovyra-icon.svg"
-                  alt="Innovyra"
-                  width={34}
-                  height={34}
-                  className="relative"
-                />
-              </div>
-              <div className="leading-tight">
+    <div className="min-h-screen relative">
+      {/* Staggered Menu - fixed overlay */}
+      <StaggeredMenu
+        position="right"
+        items={navItems}
+        displaySocials={false}
+        displayItemNumbering={true}
+        menuButtonColor="rgba(234,240,255,0.8)"
+        openMenuButtonColor="rgba(234,240,255,0.9)"
+        changeMenuColorOnOpen={false}
+        colors={["rgba(11,17,32,0.95)", "rgba(139,92,246,0.12)"]}
+        accentColor="#06b6d4"
+        logoElement={logoElement}
+        onItemClick={handleNavClick}
+        footerContent={footerContent}
+        isFixed={true}
+        closeOnClickAway={true}
+      />
+
+      {/* Main content */}
+      <div className="mx-auto max-w-6xl px-4 pt-24 pb-6">
+        <section className="space-y-4 min-w-0">
+          <header className="glass-glow flex flex-col gap-3 rounded-3xl p-5 md:flex-row md:items-center md:justify-between relative overflow-hidden">
+            {/* Ambient gradient */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(6,182,212,0.1),transparent_65%)] blur-3xl" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-[rgba(16,185,129,0.8)] animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                 <div className="text-sm font-semibold tracking-wide">
-                  Innovyra
-                </div>
-                <div className="text-xs text-[var(--muted)]">
-                  Execution OS
+                  {pathname === "/dashboard"
+                    ? "AI Execution Command Center"
+                    : pathname === "/dashboard/research"
+                    ? "DeepSearch Intelligence Lab"
+                    : pathname === "/dashboard/roadmap"
+                    ? "Career Roadmap Engine"
+                    : pathname === "/dashboard/analytics"
+                    ? "Performance Analytics"
+                    : pathname === "/dashboard/agents"
+                    ? "AI Agent Orchestrator"
+                    : "Project HUB"}
                 </div>
               </div>
-            </Link>
-
-            <div className="mt-4 space-y-1">
-              {navItems.map((item) => {
-                const active = item.href === pathname;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition",
-                      active
-                        ? "bg-[rgba(6,182,212,0.10)] text-[var(--foreground)] shadow-[0_0_0_1px_rgba(6,182,212,0.25)_inset]"
-                        : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[rgba(255,255,255,0.06)]",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.10)] bg-[rgba(0,0,0,0.22)]",
-                        active &&
-                          "border-[rgba(6,182,212,0.35)] shadow-[0_0_20px_rgba(6,182,212,0.14)]"
-                      )}
-                    >
-                      <Icon size={18} />
-                      {active ? (
-                        <span className="absolute -right-2 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-[linear-gradient(180deg,rgba(139,92,246,0.85),rgba(6,182,212,0.75))] shadow-[0_0_18px_rgba(139,92,246,0.35)]" />
-                      ) : null}
-                    </span>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span>{item.label}</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+              <div className="mt-1 text-xs text-[rgba(234,240,255,0.45)]">
+                {pathname === "/dashboard"
+                  ? "Real-time career execution cockpit — tasks, AI insights, and orchestration in one place."
+                  : pathname === "/dashboard/research"
+                  ? "Live market intelligence, skill gap analysis, and career trajectory optimization."
+                  : "Your career execution operating system — powered by AI."}
+              </div>
             </div>
-
-            <div className="mt-6 rounded-2xl border border-[rgba(255,255,255,0.10)] bg-[rgba(0,0,0,0.18)] p-3">
-              <div className="text-xs text-[rgba(234,240,255,0.65)]">
-                Signed in
-              </div>
-              <div className="mt-1 truncate text-sm">{userEmail}</div>
+            <div className="relative z-10 flex flex-wrap items-center gap-2">
               <Button
-                onClick={handleSignOut}
-                disabled={signingOut}
-                variant="ghost"
-                className="mt-3 w-full justify-start"
+                variant="outline"
+                onClick={() => router.refresh()}
+                className="h-9 text-xs"
+                size="sm"
               >
-                <LogOut size={16} />
-                {signingOut ? "Signing out…" : "Sign out"}
+                Refresh
               </Button>
             </div>
-          </aside>
+          </header>
 
-          <section className="space-y-6">
-            <header className="glass flex flex-col gap-3 rounded-3xl p-5 md:flex-row md:items-center md:justify-between">
-              <div>
-                <div className="text-sm font-semibold tracking-wide">
-                  Project HUB
-                </div>
-                <div className="mt-1 text-sm text-[var(--muted)]">
-                  Your career execution cockpit — tasks, milestones, analytics,
-                  and AI insight in one place.
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => router.refresh()}
-                  className="h-10"
-                >
-                  Refresh
-                </Button>
-                <Button
-                  onClick={() => router.push("/dashboard")}
-                  className="h-10"
-                >
-                  Open Kanban
-                </Button>
-              </div>
-            </header>
-
-            {children}
-          </section>
-        </div>
+          {children}
+        </section>
       </div>
     </div>
   );

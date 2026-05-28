@@ -105,8 +105,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      mode: process.env.GEMINI_API_KEY ? "gemini" : "stub",
-      model: process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
+      mode: process.env.OPENROUTER_API_KEY ? "openrouter" : "fallback",
+      model: process.env.OPENROUTER_MODEL ?? "deepseek/deepseek-v4-flash:free",
       output,
     });
   } catch (error) {
